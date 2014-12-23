@@ -1,0 +1,33 @@
+1.ServletContextListener:
+1). what:监听ServletContext对象被创建或销毁事件.
+2). how:
+		> 创建实现 implements ServletContextListener{
+		> web.xml中配置Listener
+			  <listener>
+			  	<listener-class>com.bin.listener.HelloServletContextListener</listener-class>
+			  </listener>
+3). why: ServletContextListener是最常用的Listener,可以在当前WEB应用被加载时对当前WEB应用的相关资源进行初始化操作:
+	创建数据库链接池,创建Spring的IOC容器,读取当前web应用的初始化参数....
+4). API:两个方法,初始化和销毁两个方法.
+	public void contextInitialized(ServletContextEvent sce)
+	public void contextDestroyed(ServletContextEvent sce)
+	ServletContextEvent类,只有一个方法:sce.getServletContext() ;
+2.ServletRequestListener 和 HttpSessionListenner与ServletContextListener相似;
+3.利用listener分析生命周期:
+	> request:是一个请求,当一个响应返回时,即被销毁,当发送一个请求时被创建.request和response是一对一对的.请求转发是同一个request对象.请求重定向是两个请求对象.
+	> session:当第一次访问WEB应用的一个jsp或Servlet时,且该jsp或session对象,此时服务器会创建一个session对象.
+		* Tomcat7\work\Catalina\localhost\JavaWeb_atguitu下SESSIONS.ser文件对session持久化.这样服务器重启后,session也并没有销毁.
+		* 关闭浏览器,并不意味着session被销毁,可以通过sessionID读取那个session.可以在浏览器中使用,localhost:8080/webapp/index.jsp;jsessionid=实际的sessionID找到这个session;
+	> application:贯穿于当前web应用的生命周期.当前WEB应用被加载时,创建application对象,当前WEB应用卸载时,销毁.
+4.监听request和session和application中属性变化.用的较少.属性的添加,移除,替换.
+	> HttpSessionBindingEvent:
+		* getName:获取属性的名字.
+		* getValue:获取属性的值.
+5.HttpSessionBindingListener绑定事件.帮助javaBean感受到自己被绑定到session中.不需要web.xml中配置.
+	> HttpSessionBindingEvent:
+		* getName:获取属性名.
+		* getValue:获取自己.
+		* getSession:获取session.
+6.HttpSessionActivationListener接口.监听Session对象持久化javaBean.
+	> sessionDidActivate方法,从磁盘中读取出来,
+	> sessionWillPassivate方法,写入到磁盘..

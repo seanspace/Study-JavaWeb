@@ -1,0 +1,35 @@
+1.使用Filter完成一个简单的权限模型.
+
+1).需求:
+①  管理权限
+	> 查看某人的权限
+	> 修改某人的权限
+
+②  对访问进行权限控制.
+
+2). 实现:
+① 管理权限:
+	> 封装权限信息:Authority
+	Authority {
+		// 显示到页面的权限的名字;
+		private String displayName ;
+		// 权限对应的URL地址,开发时:private String[] urls ;
+		private String url ;
+	}
+	> 封装用户信息:User
+	User {
+		private String usename ;
+		List<authority>
+		//...
+	}
+	> 创建一个UserDao:
+		User get(String username) ;
+		void update(String username, List<authority>) ;
+	> 页面
+		* authority-manager.jsp:有一个text文本框,供输入username,提交后,使用checkbox显示当前页面的所有信息;
+		* 检查request中是否有user信息,若有,则显示
+		XXX权限为:对应的权限的checkbox打上对号,提示,页面上通过两层循环的方式筛选出被选择的权限;
+	
+	> servlet	
+	authority-manager.jsp,get方法,提交表单后:获取请求参数:username,再根居username获取user信息,把user放入到quest中,转发发到authority-manager.jsp
+	authority-manager.jsp,update方法,修改权限后提交:获取请求参数:username,authory(多选);把权限封装为List;调用userDao的update()方法实现权限的修改;重定向到

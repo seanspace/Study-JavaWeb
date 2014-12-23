@@ -1,0 +1,168 @@
+1.servlet完成如下功能:
+	--创建并返回基于客户请求的动态html页面; ;
+	--创建可嵌入到现有html页面中的部分html页面;(html片段);
+	--与其他服务器资源(如数据库或基于java的应用程序)进行通信 ;
+	
+2.请求过程:请求----->servlet容器----->servlet------>数据库
+
+3.servlet调用过程参考:com.bin.servlet.HelloServlet
+  1).构造器:第一次请求时,调用构造器,创建Servlet的实例 ;
+  		说明Servlet是一个单实例,有线程安全问题
+  2).init:只被调用一次,在创建好实例后立即调用,用于初始化当前Servlet.
+  3).service:被多次调用,每次请求都被调用;
+  4).destroy只被调用一次,释放资源;
+  
+4.servlet容器:
+  1).可以创建Servlet,并调用Servlet的相关生命周期方法;
+  2).JSP,Filter, Listener,Tag ...都是被它管理;
+  
+5.<load-on-startup>1</load-on-startup>    ms
+  1).配置在web.xml中的servlet节点中;
+     <servlet>
+	  	<servlet-name>helloServlet</servlet-name>
+	  	<servlet-class>com.bin.servlet.HelloServlet</servlet-class>
+	  	<!--  -->
+	  	<load-on-startup>1</load-on-startup>
+	  </servlet>
+  2).指定创建的时机,若为负数,第一次访问时创建.若为0或正数,则在当前的WEB应用启动时加载;
+  
+6.关于servlet-mapping:
+  1).在Servlet映射到URL中可以使用*通配符.但是只能有两种格式:
+  	  一种是"*.扩展名".另一种是已正斜杠(/)开头,并以"/*"结尾;
+  	  如果用"/*.html"则无法启动;
+  	    <!-- 通配符 -->
+		  <servlet-mapping>
+		  <servlet-name>secondServlet</servlet-name>
+		  	<url-pattern>*.html</url-pattern>
+		  </servlet-mapping>  
+		  <!-- 通配符 -->
+		  <servlet-mapping>
+		  <servlet-name>secondServlet</servlet-name>
+		  	<url-pattern>/abc/*</url-pattern>
+		  </servlet-mapping>
+		  
+7.ServletConfig:封装了Servlet的配置信息,并且可以获取ServletContext;
+	GenericServlet实现呢了servletConfig这个接口,所有servletConfig的方法直接可以使用GenericServlet得到;
+    1).<!-- 配置Servlet的初始化参数,这些节点必须放在load-on-startup前面 -->
+  	<init-param>
+  		<param-name>user</param-name>
+  		<param-value>root</param-value>
+  	</init-param>
+  	<init-param>
+  		<param-name>password</param-name>
+  		<param-value>1230</param-value>
+  	</init-param>
+  	2).获取初始化参数:
+  	>config.getInitParameter(String paraName)
+  	>config.getInitParameterNames()
+  	3)获取:config.getInitParameterNames()
+  	
+8.ServletContext:每个web应用程序都有一个对应的ServletContext对象,它被包含在ServletConfig对象中;
+    所有的Servlet都共享同一个ServletContext对象;所以又叫:application对象;
+  1). 可以由ServletConfig获取;ServletContext servletContext = config.getServletContext() ;
+  2). 该对象代表当前WEB应用的的一个大管家,可以获取当前应用的各个方面的信息;
+  	  ①.获取当前应用的初始化参数:
+  	  > 设置初始化参数:
+		 <!-- 配置当前WEB应用的初始化参数 -->
+		  <context-param>
+		  	<param-name>driver</param-name>
+		  	<param-value>com.mysql.jdbc.Driver</param-value>
+		  </context-param>
+		  <context-param>
+		  	<param-name>jdbcUrl</param-name>
+		  	<param-value>jdbc:mysql:///atguigu</param-value>
+		  </context-param>
+	  > 获取初始化参数:
+	    ServletContext servletContext = config.getServletContext() ;
+	    String driver = servletContext.getInitParameter("driver") ;
+	  ②. 获取当前web应用的某个文件的绝对路径:
+	  	String realPath = servletContext.getRealPath("note.txt") ;
+			// 参数的当前路径,为部署后的项目的根路径:JavaWeb_atguitu
+		System.out.println(realPath);//D:\Developer\Tomcat7\webapps\JavaWeb_atguitu\note.txt
+	 ③. 获取当前WEB应用的名称:就是部署的<Context path="" />
+		String contextPath = servletContext.getContextPath() ;
+		System.out.println("contextPath:" + contextPath);//   "/JavaWeb_atguitu"
+	 ④. 获取当前应用的某一个文件的输入流:(注意对比)
+		ClassLoader classLoader = getClass().getClassLoader() ;// 根路径,相对于classpath,也就是/WEB-INF/classes/
+		InputStream inputStream = classLoader.getResourceAsStream("/jdbc.properties") ;
+		InputStream inputStream3 = classLoader.getResourceAsStream("jdbc.properties") ;
+		System.out.println("1. " + inputStream);//1. java.io.BufferedInputStream@5b522d7c
+		System.out.println("3. " + inputStream3);//1. java.io.BufferedInputStream@5b522d7c
+		
+		// 根路径,相对于当前的应用部署路径,也就是:JavaWeb_atguitu
+		InputStream inputStream2 = servletContext.getResourceAsStream("/WEB-INF/classes/jdbc.properties") ;
+		InputStream inputStream4 = servletContext.getResourceAsStream("WEB-INF/classes/jdbc.properties") ;
+		System.out.println("2. " + inputStream2);//2. java.io.FileInputStream@702856ba
+		System.out.println("4. " + inputStream4);//2. java.io.FileInputStream@702856ba
+	⑤. 和attribute相关的几个方法:在讲request时讲;
+
+9. get请求和post请求:
+
+10. 如何在Servlet中获取请求信息:
+   1).Servlet的service方法用于应答请求;
+   	  public void service(ServletRequest req, ServletResponse res)
+   2).ServletRequest:封装了请求信息,可以从中获取任何的请求信息;
+   	  ①.获取请求参数:
+   	   String getParameter(String name) 
+        	Returns the value of a request parameter as a String, or null if the parameter does not exist. 
+		Map getParameterMap() 
+		    Returns a java.util.Map of the parameters of this request. 
+		        返回请求参数的键值对:key:参数名,value:参数值.String[]类型;
+		Enumeration getParameterNames()
+		    Returns an Enumeration of String objects containing the names of the parameters contained in this request. 
+			返回参数名对应的Enumeration对象;
+		String[] getParameterValues(String name)
+			Returns an array of String objects containing all of the values the given request parameter has, or null if the parameter does not exist.
+			像下面这种情况就是出现多选的时候,同一个Key对应多个值,需要用到这个方法;
+			http://localhost:8080/JavaWeb_atguitu/loginServlet?user=liu&password=123&interesting=reading&interesting=Game&%E6%8F%90%E4%BA%A4=%E6%8F%90%E4%BA%A4
+   	  ②.获取其他请求参数:
+   	    //获取请求的URI
+		String requestURI = ((HttpServletRequest)req).getRequestURI() ;
+		System.out.println("URI :" + requestURI);
+		//URL
+		StringBuffer requestURL = ((HttpServletRequest)req).getRequestURL() ;
+		System.out.println("URL :" + requestURL);
+		//请求方式
+		String method = ((HttpServletRequest)req).getMethod() ;
+		System.out.println("Method:" + method);
+		//查询串;如果是post请求,将不存在queryString;
+		String queryString = ((HttpServletRequest)req).getQueryString() ;
+		System.out.println("queryString :" + queryString);
+		//servletPath  映射路径 
+		String servletPath = ((HttpServletRequest)req).getServletPath() ;
+		System.out.println("ServeltPath :" + servletPath);
+	③.和attribute有关的几个方法:
+   3).ServletResponse:封装了响应信息,如果想给用户什么响应,就具体实现方法;
+        ①.	// 设置响应的内容类型;
+		// tomcat的web.xml文件中有contentType的字串映射;
+		res.setContentType("application/msword");
+		
+		PrintWriter printWriter = res.getWriter() ;
+		printWriter.write("helloworld...");
+	②.getOutputStream()二进制文件下载的时候要用;
+	③.sendRedriect()请求转发;
+   4).request和response这两个接口的实现类都是服务器给予实现的.并在服务器调用service方法时传入;
+	
+11.GenericServlet实现了ServletConfig接口,所以servlet拥有servletConfig的所有方法;是一个抽象类;
+  1).GenericServlet中新增加了一个init()方法,用于初始化,防止覆盖init(ServletConfig config)方法,忘记写super.init(ServletConfig config)造成的空指针异常;
+  2).init()方法,并非servlet的生命周期方法;而init(ServletConfig config)是servlet的生命周期方法;
+12.HttpServlet:获取了请求方式getMethod之后,写了doXXX方法;
+13.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

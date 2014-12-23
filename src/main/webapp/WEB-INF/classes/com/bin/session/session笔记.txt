@@ -1,0 +1,55 @@
+session;会话,一个有始有终的过程;
+1.如果浏览器禁用session:服务器每次都会为客户端生成一个seesion;
+2.session可以采用cookie方式;也可以采用Url重写;
+3.	// 使用cookie对session进行持久化;如果不持久化,关闭浏览器就会消失;
+	Cookie cookie = new Cookie("JSESSIONID",session.getId()) ;
+	cookie.setMaxAge(20) ;// 持久20秒;
+	response.addCookie(cookie) ;
+4.HttpSession的生命周期:
+  > 什么时候创建HttpSession对象?
+  	1).是否浏览器访问服务端的任何一个jsp或servlet都会立即创建一个session对象?
+  		不一定的;
+  		> 若当前jsp(或servlet)是客户端的访问的当前的第一个资源,且JSP的page指定的session属性值为false,
+  			则服务器不会为客户端创建session对象;request.getSession(false) ;
+  		> 若当前jsp访问的不是WEB应用的第一个资源,且其它页面已经创建一个HttpSession对象,则当前页面会返回一个
+  			会话的session对象,而不会创建一个新的HttpSession对象;
+  		> <%@ page session="false"%>意思是,当前页面禁用session隐含变量;但可以使用其他显示的变量(自己声明一个,并得到session);
+  		> 对于servlet而言,若servlet是浏览器客户端访问的第一个web应用的资源,则只有调用了request.getSession()或request.getSession(true)
+  			才会创建session对象;
+  		> 对于JSP如果没有调用session的方法,默认是有一个隐含的session对象,所以一般访问第一个资源是jsp的话,就会有一个session的id生成.
+  > 什么时候销毁HttpSession对象?
+	1).直接调用HttpSession的invalidate()方法,使session失效;可以用于退出登陆;
+	2).服务器卸载了当前web应用;
+	3).超过HttpSession的过期时间,也会销毁;
+		> 得到最大有效时间;session.getMaxInactiveInterval() ;默认是半个小时,1800秒
+		> 设置最长时间:session.setMaxInactiveInterval(5) ;
+		> 在当前应用的web.xml文件中设置HttpSession最长时间;单位分钟;
+		> 在tomcat下conf下的web.xml下配置;单位:分钟
+
+5.并不是关闭了浏览器就销毁了session.
+6.HttpSession的常用方法:
+	out.print("SessionId:" + session.getId()) ;
+	out.print("<br><br>") ;
+	
+	out.print("IsNew:" + session.isNew()) ;
+	out.print("<br><br>") ;
+	
+	out.print("MaxInactiveInternal:" + session.getMaxInactiveInterval()) ;
+	out.print("<br><br>") ;
+	
+	out.print("createTime:" + session.getCreationTime()) ;
+	out.print("<br><br>") ;
+	
+	out.print("lastAccessTime:" + session.getLastAccessedTime()) ;
+	out.print("<br><br>") ;
+	
+	out.print("Bye:" + session.getAttribute("username")) ;
+	out.print("<br><br>") ;
+	
+	session.invalidate() ;
+7.url重写session:当浏览器禁用了cookie时可以用这种方式跟踪session;
+	<%=response.encodeUrl("hello.jsp") %>
+	HttpServletResponse接口中定义了两个用于完成UrL重写的方法:
+	encodeURL()方法;
+	encodeRedirectURL()方法;
+	两个方法效果是一样的;

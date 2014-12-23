@@ -1,0 +1,50 @@
+1.Filter:
+
+1). Filter是什么?
+JavaWeb的一个重要组件,可以发送到Servlet的请求进行拦截,并对响应也进行拦截;
+Filter是实现了Filter接口的Java类.
+Filter需要在web.xml文件中进行配置和映射;
+
+2). 如何创建一个Filter,并把它跑起来;
+① 是想Filter接口:public class HelloFilter implements Filter
+② 在web.xml文件中配置并映射Filter.其中url-pattern指定该Filter可以拦截哪些资源,也就是可以通过哪些url访问到该Filter;   
+<!-- 注册Filter -->
+  <filter>
+  	<filter-name>helloFilter</filter-name>
+  	<filter-class>com.bin.filter.HelloFilter</filter-class>
+  </filter>
+  <!-- 映射Filter -->
+  <filter-mapping>
+  	<filter-name>helloFilter</filter-name>
+  	<url-pattern>/filter/test.jsp</url-pattern>
+  </filter-mapping>
+
+3). Filter相关的API.
+	> public void init(FilterConfig filterConfig):创建filter对象(web容器启动时创建)后,立即被调用,切只被调用一次.Filter实例是单例;
+		* FilterConfig类似与ServletConfig
+		* 可以在web.xml中配置初始化参数;
+			  <filter>
+			  	<filter-name>helloFilter</filter-name>
+			  	<filter-class>com.bin.filter.HelloFilter</filter-class>
+			  	<!-- 配置FilterConfig初始化参数 -->
+			  	<init-param>
+			  		<param-name>name</param-name>
+			  		<param-value>root</param-value>
+			  	</init-param>
+			  </filter>
+	> public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain):真正进行拦截的代码编写在此,每次拦截会调用本方法;
+		* FilterChain:Filter链,多个Filter可以构成一个Filter链;
+			- doFilter(ServletRequest request,ServletResponse response):把请求传给Filter链的下一个Filter,若当前的Filter是Filter链的最后一个Filter,将把请求给到目标资源;
+		* <!-- 多个Filter 加载顺序和web.xml文件中先后顺序无关,拦截顺序和flter-mapping先后顺序一致.-->
+	> public void destroy():释放当前Filter所占资源的方法.在Filter被销毁之前只调用一次;
+	
+4). 默认情况,通过get或post请求:request到过滤路径,会被拦截,但是通过别的路径转发给到这个路径,不被拦截;可以通过设置工作方式改变.	可以指定多种工作方式.
+  <filter-mapping>
+    <filter-name>helloFilter</filter-name>
+    <url-pattern>/filter/test.jsp</url-pattern>
+    <!-- 配置filter拦截方式:默认拦截外部请求;可以指定多种方式. -->
+    <dispatcher>FORWARD</dispatcher><!-- 拦截请求转发 -->
+    <dispatcher>REQUEST</dispatcher><!-- 拦截外部请求 -->
+    <dispatcher>INCLUDE</dispatcher><!-- 拦截包含本路径 -->
+    <dispatcher>ERROR</dispatcher><!-- 拦截 在web.xml文件配置的error页面访问本路径.-->
+  </filter-mapping>

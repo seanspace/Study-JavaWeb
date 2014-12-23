@@ -1,0 +1,71 @@
+tag
+
+参照WEB-INF下的mytag.tld文件;
+com.bin.tag.HelloTag
+tag/test.jsp
+
+1.helloWorld
+	1).创建一个标签处理类:实现SimpleTag
+	2).在WEB-INF下新建一个.tld(标签描述文件)为扩展名的xml文件,
+	3).在tld文件中描述自定义的标签
+	4).在JSP页面中,导入并使用自定义标签;
+2.带属性的标签;
+	1).在页面中使用
+	
+	
+3.带标签体的自定义标签:
+	1).若一个标签有标签体:
+	<atguigu:testJspFragment>HelloWorld__</atguigu:testJspFragment>
+	在自定义标签的标签处理器中使用JspFragment对象封装标签体信息.
+	2).若配置了标签含有标签体,则Jsp引擎会调用setJspBody()方法把JspFragment传递给标签处理器类;
+	在SimpleTagSupport中还定义了一个getJspBody()方法,用于返回JspFragment对象;
+	3).JspFragment的invoke(Writer)方法:把标签体的内容从Writer中输出,若参数为null,
+	则等同于invoke(getJspContext().getOut()),即直接把标签体内容输出到页面.
+	4).在tld文件中,使用body-content指定标签体类型,可能取值有3中:
+	empty:没有标签体;
+	scriptless:(大部分取值这个;)标签体可以包含el表达式和JSP动作元素,但不能包含JSP的脚本元素;可以有${},不可以有<%= %>,<% %>
+	tagdependent:表示标签体交由标签本身去解析处理.容器不经处理,比如:加入${},则得到的流依旧是${}.
+		若指定tagdependent,在标签体中的所有代码都会原封不动的交给标签处理器,而不是将执行结
+	5).有时可以借组StringWriter这个类得到标签体类的东西;
+	  <!-- 描述JSPFragment,带标签体的标签 -->
+	  <tag>
+	  	<name>testJspFragment</name>
+	  	<tag-class>com.bin.tag.TestJspFragment</tag-class>
+	  	<!-- 标签的类型,scriptless:标签体可以包含el表达式和JSP动作元素,但不能包含JSP的脚本元素; -->
+	  	<body-content>scriptless</body-content>
+	  </tag>
+4.实现forEach:
+	> 两个属性:items(集合类型,collection),var(String 类型)
+	> doTag:
+		* 遍历items对应的集合,
+		* 把正在遍历的对象放入到pageContext中,键:var,值:正在遍历的对象;
+		* 把标签体的内容直接输出到页面上;
+	
+	>
+		<c:forEach items="${requestScope.customers}" var="cust">
+			<br>${cust.id } -- ${cust.name } -- <br>
+		</c:forEach>
+	> 
+		<c:forEach items="${requestScope.customers}" var="cust">
+			<br>${pageScope.cust.id } -- ${cust.name }
+		</c:forEach>
+		
+5. 开发有父标签的标签:
+	1). 父标签无法获取子标签的引用,父标签仅把子标签作为标签体来使用.
+	2). 子标签可以通过getParent()方法来获取父标签的引用(需继承SimpleTagSupport或自实现SimpleTag接口的该方法):
+	若子标签的确有父标签,JSP引擎会把代表父标签的引用通过setParent()赋給标签处理器
+	3). 注意:父标签的类型是JspTag类型;该接口时一个空接口,是用来统一SimpleTag和Tag的.实际使用需要进行类型的强制转换.
+	4). 在tld配置文件中,无需为父标签有额外的配置,但,子标签是以标签体的形式存在的.所以父标签的<body-content>scriptless</body-content>;
+	
+	实现:
+	 <c:choose>
+	 	<c:when test="${param.age }> 24" >大学毕业</c:when>
+	 	<c:when test="${param.age } > 20">高中毕业</c:when>
+	 	<c:otherwise>高中以下..</c:otherwise>
+	 </c:choose>
+	 > 开发3个标签:
+	 > 其中when标签有一个boolean类型的属性:test
+	 > choose是when和otherwise的父标签,when在otherwise之前使用
+	 > 在父标签choose中定义一个"全局"的boolean类型的flag:用于判断子标签在满足跳纤的情况下是否执行.
+	 	* 若when的test为true,且when的父标签也为true,则执行无痕的标签体,同时把flag设置为false;
+	 	* 若flag为true,otherwise执行标签体;

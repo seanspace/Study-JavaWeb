@@ -1,0 +1,6 @@
+1.<%=request.getLocale() %>,浏览器可以设置本地语言.服务端可以接收请求,得到客户端本地化语言.
+2.Locale类:
+		Locale locale = Locale.CHINA ;
+		System.out.println(locale.getDisplayCountry());
+		System.out.println(locale.getLanguage());
+3.

@@ -1,0 +1,41 @@
+Core:
+
+1.表达式操作:
+	1) out
+		①为什么使用:可以对敏感的字符进行转换;
+			<%
+			request.setAttribute("book", "<<java>>") ;
+			%>
+			直接使用el,出不来book:${requestScope.book } ;因为带了特殊字符;
+			<br>
+			使用C:out标签包装el表达式,可以输出,book:<c:out value="${requestScope.book }"></c:out>
+		得到的html源代码如下:
+			直接使用el,出不来book:<<java>> ;因为带了特殊字符;
+			<br>
+			使用C:out标签包装el表达式,可以输出,book:&lt;&lt;java&gt;&gt;
+			<br>
+		②有4个属性:
+			> value
+			> default
+	2) set
+		①
+	3) remove
+	4) catch(不用)
+
+2.流程控制
+	1) if
+	2) choose
+	3) when
+	4) otherwise
+	
+3.迭代操作:
+	1).forEach
+	2).forTokens
+	
+4.URL操作:
+	1)import
+	2)param
+	3)url
+	4)param
+	5)redirect
+	6)param

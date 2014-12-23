@@ -1,0 +1,80 @@
+1.进行文件上传时,表单要做的准备:
+1).请求方式为POST
+2).使用file的表单域:
+3).使用编码方式:multipart/form-data
+	如下:
+	<form action="uploadServlet" method="post" enctype="multipart/form-data">
+		File:<input type="file" name="file" />
+		<input type="submit" value="Submit" />
+	</form>	
+4)	enctype可以的取值:
+		> application/x-www-form-urlencoded:表单enctype属性的默认值.这种编码方案使用默认的字符集,当使用了非字母和数字时,必须使用%HH(H代表16进制数字).对于大容量的二进制数据或包含ASCII字符的文本来说,这种编码不能满足要求.
+		> multipart/form-data:表示表单以二进制传输数据;
+2.服务端:
+1). 不能再使用request.getParameter()等方式请求信息.获取不到,因为请求的编码方式已经改为二进制.
+2). 可以使用输入流的方式获取.
+	-----------------------------7de12c1b305cc
+	Content-Disposition: form-data; name="file"; filename="你好.txt"
+	Content-Type: text/plain
+	
+	﻿ni men hao --(这两行是文件中的内容)
+	你们好
+	-----------------------------7de12c1b305cc
+	Content-Disposition: form-data; name="desc"
+	
+	www.atguigu .com --(这行是提交的文本域的内容)
+	-----------------------------7de12c1b305cc--
+3). 使用commons-fileupload组件来完成文件上传:详细参考官方文档.
+I.加入两个jar包
+II.基本思想:
+	> 可以解析请求,得到一个FileItem对象的List
+	> 无论是一般文本域还是一个文件域,都是一个FileItem
+	> 可以调用isFormField()方法来判断是否表单域.
+	> 再来进一步获取信息:
+		* 表单域:if (item.isFormField()) {
+				    String name = item.getFieldName();
+				    String value = item.getString();
+				    ...
+				}
+		* 文件域:if (!item.isFormField()) {
+				    String fieldName = item.getFieldName();
+				    String fileName = item.getName();
+				    String contentType = item.getContentType();
+				    boolean isInMemory = item.isInMemory();
+				    long sizeInBytes = item.getSize();
+				    ...
+				}
+III.如何得到List<FileItem>对象:
+	> 简单的方式:
+		// Create a factory for disk-based file items
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		
+		// Configure a repository (to ensure a secure temp location is used)
+		ServletContext servletContext = this.getServletConfig().getServletContext();
+		File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
+		factory.setRepository(repository);
+		
+		// Create a new file upload handler
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		
+		// Parse the request
+		List<FileItem> items = upload.parseRequest(request);
+		
+	> 复杂的方式:可以为文件的上传加入一些限制条件和其他的属性:可以参考文档.
+		// Create a factory for disk-based file items
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		
+		// 设置内存中最多存储的文件的大小,若超出,写入硬盘.
+		factory.setSizeThreshold(yourMaxMemorySize);// 文件超过多少时,写入文件.单位是字节
+		factory.setRepository(yourTempDirectory);// 设置临时文件夹
+		
+		// Create a new file upload handler
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		
+		// 设置总的文件最大值.
+		upload.setSizeMax(yourMaxRequestSize);
+		// 设置单个文件的最大值.
+		upload.setFileSizeMax(size) ;
+		
+		// Parse the request
+		List<FileItem> items = upload.parseRequest(request);	

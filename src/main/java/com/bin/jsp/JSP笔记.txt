@@ -1,0 +1,203 @@
+jsp实际就是一个servlet,所以它可以使用Servlet的所有方法;
+jsp中的内容,实际上就在重写service方法.jsp内的java脚本代码,最终会在对应的servlet的service中执行;
+当然是用声明后可以写在service外面;
+
+1.jsp可以放在web应用中除了WEB-INF 及其子目录外的所有目录下;不能直接访问WEB-INF目录下的内容,除非请求转发.
+
+2.在Tomcat7\work\Catalina\localhost\JavaWeb_atguitu\org\apache\jsp下可以找到hello_jsp.class和hello_jsp.java两个文件;
+
+3.jsp页面的隐含对象;没有申明就可以使用的对象,就叫隐含对象;
+  public void _jspService(final javax.servlet.http.HttpServletRequest request, final javax.servlet.http.HttpServletResponse response)
+        throws java.io.IOException, javax.servlet.ServletException {
+
+    final javax.servlet.jsp.PageContext pageContext;
+    javax.servlet.http.HttpSession session = null;
+    final javax.servlet.ServletContext application;
+    final javax.servlet.ServletConfig config;
+    javax.servlet.jsp.JspWriter out = null;
+    final java.lang.Object page = this;
+    <% %>中的java代码直接会编译到这个方法执行;
+    
+    }
+    以上8个对象,可以直接使用;另为还可以使用一个叫exception的隐含对象;
+  ①.request:HttpServletRequest的一个对象;
+  ②.response:HttpServletResponse的一个对象(不过很少在jsp中调用response的方法)
+  ③.pageContext:页面的上下文,是PageContext的一个对象.可以从此对像中,获取其它8个隐含对象;
+  	也可以从中获得其他信息;(学习自定义标签的时候会使用它)
+  ④.session:代表浏览器和服务器的一次会话,是HttpSession的一个对象;
+  ⑤.application:代表当前web应用,是ServletContext的当前对象;
+  ⑥.config:是当前对应的Servlet的servletConfig对象(几乎不使用,了解下就可以了) ;
+  	若要访问当前jsp配置的初始化参数,需要通过映射地址才可以.
+  	  <!-- 为jsp配置 -->
+	  <servlet>
+	  	<servlet-name>hellojsp</servlet-name>
+	  	<jsp-file>/hello.jsp</jsp-file>
+	  	<init-param>
+	  		<param-name>test</param-name>
+	  		<param-value>test1</param-value>
+	  	</init-param>
+	  </servlet>
+	  <servlet-mapping>
+	  	<servlet-name>hellojsp</servlet-name>
+	  	<url-pattern>/hellojsp</url-pattern>
+	  </servlet-mapping>
+  ⑦.out:JspWriter对象.调用out.println()可以直接把字符串打印到页面;
+  ⑧.page:是指向当前JSP对应的Servlet对象的引用,用Object类型表示的.只能调用Object类的方法(开发几乎不用);
+  ⑨.exception:加了<%@ page isErrorPage="true" %>这句话声明才可以使用;
+  pageContext,request,session,application(对属性的作用范围从小到大)
+  
+4.JSP语法:
+  1).JSP模板元素:jsp页面的一些静态html;
+  2).JSP表达式(expression):提供了将一个java标量或表达式的计算结果输出到客户端的简化方式;
+  	它将要输出的变量或表达式直接封装在<%= 和 %>之中;
+  	使用这个表达式最终被翻译成:out.print();
+  3).JSP声明<%! %>:默认的脚本代码是放在service()方法中.所以需要声明,放在service外面;
+  	<%! %>(很少使用jsp声明)
+  4).JSP注释<%-- --%>:
+  	<%-- jsp注释 --%>:可以阻止java代码的执行;
+	<!-- html注释 -->:
+  5).
+
+ 5.和属性相关的方法:
+ 	1).> getAttribute(String name)得到指定的属性;
+ 	   > removeAttribute(String name):移除指定的方法;
+ 	   > setAttribute(String name,Object o):设置属性;
+ 	   > Enumeration getAttributeNames():获取属性名称;
+ 	2).pageContext,request,session,appliction对象都有这些方法!
+ 		作用范围:
+ 	   > pageContext:当前页面
+ 	   > request:同一个请求;
+ 	   > session:同一次会话;和客户端有关;浏览器打开到关闭称之为一次会话,前提是此期间会话不失效;
+ 	   > application:同一个web应用;
+ 	   
+ 6.请求转发和重定向:
+ 	1).RequestDispatcher接口:
+ 	2).response.sendRedirect("/path")方法;
+ 	3).区别:
+ 		> 重定向客户端向本服务器发送了两次请求;
+ 		       请求的转发,客户端只发送了一次请求;
+ 	    > 请求的转发,在转发后到达的servlet中,request对象和中转的是同一个;
+ 	                    重定向,不是同一个;
+ 	    > 请求的转发,只能转发到当前应用中;"/"代表当前WEB应用的根目录;
+ 	                    重定向,可以重定向到任何资源."/"代表当前WEB站点的根目录;也就是当前主机;
+7.jsp指令,一共3种:JSP指令是为jsp引擎而设计的,他们并不直接产生任何输出,而只是告诉引擎如何处理jsp;
+	1).<%@ page %>
+		<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+		属性:属性名大小写敏感的;
+		   > language="java" 值是固定的.
+		   > extends="package.class" 
+		   > import="java.util.Date" 导入包
+		   > session="true|false" 当前页面是否允许使用session;
+		   > buffer="none|8kb|sizekb"
+		   > autoFlush="true|false"
+		   > isThreadSate="true|false"
+		   > info="text"
+		   > errorPage="relative_url"  指定一个errorPage的路径
+		   > isErrorPage="true|false"  是否是errorPage
+		   > contentTpye="mimeType[;charset=characterSet]"如:"text/html; charset=UTF-8"
+		     	指定当前页面的响应类型;实际是:response.setContentType()方法;通常情况下JSP页面的contentType取值为:text/html;
+		   > pageEncoding="charset=characterSet"
+		   		指定当前JSP页面的字符编码,通常与contentType中的一致;
+		   > isELignored="true|false":指定当前JSP页面是否可以使用EL表达式;通常为false;
+		> 如何使客户不能直接访问一个页面呢?对于Tomcat服务器而言,WEB-INF下的文件是不能通过在浏览器中直接访问;
+		但是同过请求的转发是可以访问的!(error.jsp就是放在WEB-INF下,因为错误页面是通过请求转发实现的.)
+		通常用来放一些隐私文件;
+		> 还可以在web.xml文件中配置errorPage:
+		  <!-- 配置错误页面 -->
+		  <error-page>
+		  	<error-code>500</error-code>
+		  	<location>/WEB-INF/error.jsp</location>
+		  </error-page>
+		  <error-page>
+		  	<exception-type>java.langArithmeticException</exception-type>
+		  	<location>/WEB-INF/hello.jsp</location>
+		  </error-page>
+		  <!-- 404页面不能放在WEB-INF下面;因为404错误不是请求转发. -->
+	2).<%@ include file="" %>指令:这种叫做静态包含,两个JSP页面生成的是同一个servlet源文件,只是把源码包含在一起;
+	被包含的页面的所有out.println()的页面信息都包含了,包括头信息;
+	属性:
+		> file="" :相对路径下的文件;
+		<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+		<html>
+		<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		</head>
+		<body>
+			<h3>AAA PAGE</h3>
+			<!-- 在a.jsp中包含b.jsp用include指令; -->
+			
+		<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+		<html>
+		<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		</head>
+		<body>
+		<h3>BBB PAGE</h3>
+		</body>
+		</html>
+		</body>
+		</html>
+	3)<%@ tablib %>标签库的引用.
+8.jsp标签:
+	1).动态引入:
+		<jsp:include page="b.jsp">
+			<jsp:param value="abcd" name="username"/>
+		</jsp:include>
+		jsp:include可以使用jsp:param传参数;在b.jsp页面可以通过request.getParameter("username")获取到传入的请求参数.
+		只是把两个页面的输出合并,生成了两个独立的servlet源文件,是通过一个方法把页面合并的.他们之间不能共享变量;
+		<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+		<html>
+		<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		</head>
+		<body>
+			<h3>AAA PAGE</h3>
+			
+		<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+		<html>
+		<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Insert title here</title>
+		</head>
+		<body>
+		<h3>BBB PAGE</h3>
+		</body>
+		</html>
+		</body>
+		</html>
+	2).jsp:forward:
+		a) <jsp:forward page="/include/b.jsp"></jsp:forward>请求转发,相当于request.getRequestDispatcher("/include/b.jsp").forward(reuest,response) ;
+		b) 使用jsp:forward可以使用jsp:param子标签向b.jsp传入一些参数.同样jsp:include也可以使用jsp:param传参数;
+			<jsp:forward page="/inlude/b.jsp>
+				<jsp:param value="abcd" name="username"/>
+			</jsp:forward>
+			或者
+			<jsp:include page="b.jsp">
+				<jsp:param value="abcd" name="username"/>
+			</jsp:include>
+			在b.jsp页面可以通过request.getParameter("username")获取到传入的请求参数.
+9.中文乱码问题:
+	1).jsp页面上输入中文,请求页面不出现乱码,需要保证:
+		> pageEncoding="UTF-8" contentType="text/html;charset=UTF-8"编码一致;浏览器的编码也要一致;
+	2).获取中文参数值
+		> post请求,在获取参数值之前,调用:request.setCharacterEncoding("UTF-8") ;就可以了.
+		> GET请求:
+			> 对于GET请求,表单里的get请求,上面的方法无效,因为默认使用的编码为:ISO-8859-1.
+				<form action="b.jsp" method="get">
+					<input type="text" name="username" />
+					<input type="submit" name="提交"/>
+				</form>
+			 => 初级,解决的方法是:先解码再重编码.
+				// get请求用上面的方法解决不了,用下面的方式.
+				String val = request.getParameter("username") ;
+				String username = new String(val.getBytes("iso-8859-1"),"UTF-8") ;
+				out.print("<br>解码方式,解决get请求乱码问题:") ;
+				out.print(username) ;
+			 => 配置tomcat的server.xml,在<connector userBodyEncodingForURI="true">增加属性userBodyEncodingForURI就可以解决中问乱码问题.
+			 	默认配置如下:<Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443"/>
+			 	配置后:request.setCharacterEncoding("UTF-8") ;就可以解决get请求中问乱码.
+			> 浏览器地址栏的Get请求,也就是直接在浏览器直接拼写参数,上面两种方法都无效:http://localhost:8080/JavaWeb_atguitu/include/b.jsp?username=我们 ;这种方式逃避了浏览器编码,和sendredrict方法效果一样;
+				此处为个人总结!

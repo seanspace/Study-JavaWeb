@@ -1,0 +1,8 @@
+JavaBean
+
+1.必须有一个public且无参的构造器;
+2.JavaBean的属性名是根据setter方法和getter方法来生成的,属性名首字母必须小写;
+3.Jsp页面如何使用JavaBean 比较过时了,开发很少用了.
+	> <jsp:useBean>标签:在指定范围寻找一个指定类型的javaBean.
+	> <jsp:setProperty>
+	> <jsp:getProperty>

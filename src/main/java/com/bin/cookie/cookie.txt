@@ -1,0 +1,38 @@
+1.Cookie:
+  1).是在浏览器访问WEB服务器中的某个资源时,由WEB服务器在HTTP响应消息头中附带传送给浏览器的一个小文本文件;
+  2).一旦WEB浏览器中保存了某个Cookie,那么它在每次访问该WEB服务器时,都会在HTTP请求头中将这个Cookie回传给WEB服务器;
+  3).一个cookie只能标识一种信息,它至少含有一个标识该信息的名称(NAME)和设置值(VALUE).
+  4).一个WEB站点可以给一个WEB浏览器发送多个Cookie,一个WEB浏览器也可以存储多个WEB站点提供的Cookie.
+  5).浏览器一般只允许存放300个Cookie,每个站点最多存放20个Cookie,每个cookie的大小限制为4kb;
+  6).cookie在response中的信息:
+  	 > Set-Cookie:JSESSIONID=AD59B97108DD996B104763E1A655F867; Path=/JavaWeb_atguitu/; HttpOnly
+	   Set-Cookie:name=atguigu 
+	 > 创建cookie:
+	 	// 1.创建一个Cookie对象.
+		Cookie cookie = new Cookie("name","atguigu");
+		// 2.调用一response的一个方法把Cookie传给客户端;
+		response.addCookie(cookie) ;
+  7).request中得到cookie:
+  	> Cookie:name=atguigu; JSESSIONID=AD59B97108DD996B104763E1A655F867
+  	> 得到Cookie:
+  			Cookie[] cookies = request.getCookies() ;
+			if (cookies != null && cookies.length > 0){
+				for(Cookie cookie1:cookies){
+					out.print(cookie1.getName() + ":" + cookie1.getValue()) ;
+					out.print("<br>") ;
+				}
+			} else {
+				out.print("没有一个Cookie,正在创建并返回") ;
+				// 1.创建一个Cookie对象.
+				Cookie cookie = new Cookie("name","atguigu");
+				// 2.调用一response的一个方法把Cookie传给客户端;
+				response.addCookie(cookie) ;
+			}
+  8).分为 会话级的cookie(只在内存,关闭浏览器就没了)和持久化的Cookie(保存在客户端的文件中)
+  9).cookie.setMaxAge(30) ;//设置30秒,在本地文件保存了,30秒内是有效的.
+  	若为0表示立即删除.表示内存中不允许保存.
+  	若为负数,表示不存储该Cookie,直到关闭浏览器;也就是存于内存中.
+  	若为正数,表示存储时间,单位为秒;
+  10).Cookie的作用范围:默认可以作用于当前目录和子目录,但是不能作用于当前目录的上一级;
+   > 可以通过setPath()设置cookie的作用范围;
+     cookie.setPath(request.getContextPath()) ;//代表WEB项目的根目录;
